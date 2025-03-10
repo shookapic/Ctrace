@@ -52,9 +52,15 @@ OBJECTS_DIR   = ./
 
 ####### Files
 
-SOURCES       = src/main.cpp moc_main.cpp
-OBJECTS       = main.o \
-		moc_main.o
+SOURCES       = src/Application.cpp \
+		src/MainBoard.cpp \
+		src/main.cpp moc_Application.cpp \
+		moc_MainBoard.cpp
+OBJECTS       = Application.o \
+		MainBoard.o \
+		main.o \
+		moc_Application.o \
+		moc_MainBoard.o
 DIST          = /usr/lib/qt/mkspecs/features/spec_pre.prf \
 		/usr/lib/qt/mkspecs/common/unix.conf \
 		/usr/lib/qt/mkspecs/common/linux.conf \
@@ -159,7 +165,10 @@ DIST          = /usr/lib/qt/mkspecs/features/spec_pre.prf \
 		/usr/lib/qt/mkspecs/features/exceptions.prf \
 		/usr/lib/qt/mkspecs/features/yacc.prf \
 		/usr/lib/qt/mkspecs/features/lex.prf \
-		Ctrace.pro src/main.hpp src/main.cpp
+		Ctrace.pro includes/Application.hpp \
+		includes/MainBoard.hpp src/Application.cpp \
+		src/MainBoard.cpp \
+		src/main.cpp
 QMAKE_TARGET  = Ctrace
 DESTDIR       = 
 TARGET        = Ctrace
@@ -397,8 +406,8 @@ distdir: FORCE
 	@test -d $(DISTDIR) || mkdir -p $(DISTDIR)
 	$(COPY_FILE) --parents $(DIST) $(DISTDIR)/
 	$(COPY_FILE) --parents /usr/lib/qt/mkspecs/features/data/dummy.cpp $(DISTDIR)/
-	$(COPY_FILE) --parents src/main.hpp $(DISTDIR)/
-	$(COPY_FILE) --parents src/main.cpp $(DISTDIR)/
+	$(COPY_FILE) --parents includes/Application.hpp includes/MainBoard.hpp $(DISTDIR)/
+	$(COPY_FILE) --parents src/Application.cpp src/MainBoard.cpp src/main.cpp $(DISTDIR)/
 
 
 clean: compiler_clean 
@@ -430,13 +439,19 @@ compiler_moc_predefs_clean:
 moc_predefs.h: /usr/lib/qt/mkspecs/features/data/dummy.cpp
 	g++ -pipe -O2 -flto -fno-fat-lto-objects -Wall -Wextra -dM -E -o moc_predefs.h /usr/lib/qt/mkspecs/features/data/dummy.cpp
 
-compiler_moc_header_make_all: moc_main.cpp
+compiler_moc_header_make_all: moc_Application.cpp moc_MainBoard.cpp
 compiler_moc_header_clean:
-	-$(DEL_FILE) moc_main.cpp
-moc_main.cpp: src/main.hpp \
+	-$(DEL_FILE) moc_Application.cpp moc_MainBoard.cpp
+moc_Application.cpp: includes/Application.hpp \
+		includes/MainBoard.hpp \
 		moc_predefs.h \
 		/usr/bin/moc
-	/usr/bin/moc $(DEFINES) --include /home/ren/project/Ctrace/moc_predefs.h -I/usr/lib/qt/mkspecs/linux-g++ -I/home/ren/project/Ctrace -I/home/ren/project/Ctrace -I/usr/include/qt -I/usr/include/qt/QtWidgets -I/usr/include/qt/QtGui -I/usr/include/qt/QtCore -I/usr/include/c++/14.2.1 -I/usr/include/c++/14.2.1/x86_64-pc-linux-gnu -I/usr/include/c++/14.2.1/backward -I/usr/lib/gcc/x86_64-pc-linux-gnu/14.2.1/include -I/usr/local/include -I/usr/lib/gcc/x86_64-pc-linux-gnu/14.2.1/include-fixed -I/usr/include src/main.hpp -o moc_main.cpp
+	/usr/bin/moc $(DEFINES) --include /home/ren/project/Ctrace/moc_predefs.h -I/usr/lib/qt/mkspecs/linux-g++ -I/home/ren/project/Ctrace -I/home/ren/project/Ctrace -I/usr/include/qt -I/usr/include/qt/QtWidgets -I/usr/include/qt/QtGui -I/usr/include/qt/QtCore -I/usr/include/c++/14.2.1 -I/usr/include/c++/14.2.1/x86_64-pc-linux-gnu -I/usr/include/c++/14.2.1/backward -I/usr/lib/gcc/x86_64-pc-linux-gnu/14.2.1/include -I/usr/local/include -I/usr/lib/gcc/x86_64-pc-linux-gnu/14.2.1/include-fixed -I/usr/include includes/Application.hpp -o moc_Application.cpp
+
+moc_MainBoard.cpp: includes/MainBoard.hpp \
+		moc_predefs.h \
+		/usr/bin/moc
+	/usr/bin/moc $(DEFINES) --include /home/ren/project/Ctrace/moc_predefs.h -I/usr/lib/qt/mkspecs/linux-g++ -I/home/ren/project/Ctrace -I/home/ren/project/Ctrace -I/usr/include/qt -I/usr/include/qt/QtWidgets -I/usr/include/qt/QtGui -I/usr/include/qt/QtCore -I/usr/include/c++/14.2.1 -I/usr/include/c++/14.2.1/x86_64-pc-linux-gnu -I/usr/include/c++/14.2.1/backward -I/usr/lib/gcc/x86_64-pc-linux-gnu/14.2.1/include -I/usr/local/include -I/usr/lib/gcc/x86_64-pc-linux-gnu/14.2.1/include-fixed -I/usr/include includes/MainBoard.hpp -o moc_MainBoard.cpp
 
 compiler_moc_objc_header_make_all:
 compiler_moc_objc_header_clean:
@@ -454,11 +469,21 @@ compiler_clean: compiler_moc_predefs_clean compiler_moc_header_clean
 
 ####### Compile
 
-main.o: src/main.cpp src/main.hpp
+Application.o: src/Application.cpp 
+	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o Application.o src/Application.cpp
+
+MainBoard.o: src/MainBoard.cpp includes/MainBoard.hpp
+	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o MainBoard.o src/MainBoard.cpp
+
+main.o: src/main.cpp includes/Application.hpp \
+		includes/MainBoard.hpp
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o main.o src/main.cpp
 
-moc_main.o: moc_main.cpp 
-	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o moc_main.o moc_main.cpp
+moc_Application.o: moc_Application.cpp 
+	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o moc_Application.o moc_Application.cpp
+
+moc_MainBoard.o: moc_MainBoard.cpp 
+	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o moc_MainBoard.o moc_MainBoard.cpp
 
 ####### Install
 
